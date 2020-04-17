@@ -1,0 +1,65 @@
+#!/bin/sh
+
+REC=0 # Be recursive
+MODE=0 # UPPERCASE lowercase or CustOm
+LALPHA="abcdefghijklmnopqrstuvwxyz"
+UALPHA="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+# sed sux... it should be tr/[a-z]/[A-Z] as in tr, perl...
+
+# rename() is called for every file/dir we want to rename
+rename() {
+    # check if it exists
+	if [ ! -f "$1" ] && [ ! -d "$1" ] ; then # Why [ ! -e "$1" ] does not work with /bin/sh?! 
+		`echo "$1 not found..." 1>&2` # send to error input
+		return
+	fi
+    
+    # if we are in recursive mode
+	if [ $REC -eq 1 ] ; then
+		# visit every dir
+		if [ -d $1 ] ; then
+			cd ./$1; # go to that directory
+			# and rename every one file/dir inside
+			for RECORD in `ls` ;
+			do
+				rename $RECORD;
+			done
+			cd .. # go back
+		fi
+	fi
+    
+    	# execute sed to obtain new name
+	NEW="`dirname $1`/" #execute command dirname, and save outcome to variable NEW
+	case $MODE in
+		2) NEW=$NEW`basename "$1" | sed "y/$LALPHA/$UALPHA/"` ;;
+		1) NEW=$NEW`basename "$1" | sed "y/$UALPHA/$LALPHA/"` ;;
+		*) NEW=$NEW`basename "$1" | sed "$PATTERN"` ;;
+	esac
+    
+    	# and rename if we can
+	if [ ! "$1" = "$NEW" ] && [ ! -f "$NEW" ] && [ ! -d "$NEW" ] ; then
+		mv "$1" "$NEW";
+	fi
+}
+
+# parse all parameters
+while [ "$1" != "" ] ; do
+    case "$1" in
+		"-r") REC=1 ;;
+		"-l") MODE=1 ;;
+		"-u") MODE=2 ;;
+		"-h") echo "usage: $0 -r [-l|-u] | <sed command> <filelist>"; exit;;
+		*)	# this is not a parameter
+	    		# sed pattern
+			if [ $MODE -eq 0 ] ; then
+				PATTERN="$1";
+				MODE=3;
+			else
+				# or filename
+				rename $1;
+			fi;;
+    esac
+    
+    shift 1;
+	# shift all parameteres
+done
