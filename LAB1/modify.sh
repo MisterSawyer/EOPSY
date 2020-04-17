@@ -20,8 +20,7 @@ rename() {
 		if [ -d $1 ] ; then
 			cd ./$1; # go to that directory
 			# and rename every file/dir inside
-			for RECORD in `ls` ;
-			do
+			for RECORD in `ls` ; do
 				rename $RECORD;
 			done
 			cd .. # go back
@@ -34,13 +33,10 @@ rename() {
 		1) NAME=`basename "$1" | sed -e 's/\(.*\)/\L\1/'` ;;
 		*) NAME=`basename "$1" | sed "$PATTERN"`;; # just paste sed pattern 
 	esac
-
 	# we need to lowercase extension of a file (this is the best way i could manage :/ )
 	# I don't like this echo commnand, but it's the best way I found to send data throught pipe into sed command, and then maps it using regex
 	NAME="`echo $NAME | sed 's/\(\..*\)/\L\1/'`"; 
-
 	NAME="`dirname $1`/"$NAME; #here in NAME variable we concatenated DIRNAME + (BASENAME | SED_OPERATION_ON_BASE_NAME)
-	
     	# and rename if we can
 	# if new name is different, if there is no file with this name, and no directory of this name
 	if [ ! "$1" = "$NAME" ] && [ ! -f "$NAME" ] && [ ! -d "$NAME" ] ; then
@@ -62,8 +58,7 @@ while [ "$1" != "" ] ; do
 			echo "<filelist>	List of files to change.";			
 			 exit;;
 		-*)`echo "Unknown parameter $1" 1>&2`; exit;; # send to error input		
-		*)	# this is not a parameter
-	  		
+		*)	# this is not a parameter	
 			if [ $MODE -eq 0 ] ; then # it is sed pattern
 				MODE=3; # MODE set to sed pattern
 				PATTERN="$1"; # CREATE VARIABLE PATTERN ONLY WHEN PATTERN APPEARS 				
