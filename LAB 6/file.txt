@@ -1,0 +1,3 @@
+Test copying READ
+AND 
+WRITE
